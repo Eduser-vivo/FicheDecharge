@@ -1,6 +1,6 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { useAuth } from './../auth/auth';
+import { useAuth } from '../auth/auth';
 
 
 function PrivateRoute({ component: Component, isAuth, ...rest}){

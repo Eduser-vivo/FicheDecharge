@@ -41,18 +41,10 @@ class AuthService{
         return (<Redirect to={{ pathname: "/login", state: { referer: '' } }} />);
     }
 
-    getFiche(){
-        return API_BASE_URL +"fiches";
-    }
-
     getLogin(){
         return API_BASE_URL +"login_check";
     }  
-
-    getUser(){
-        return API_BASE_URL+"users";
-    }
-
+    
     tokenExpire(){
         this.logOut();
     }

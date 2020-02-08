@@ -4,16 +4,14 @@ import {BrowserRouter, Route, Switch} from 'react-router-dom';
 import PrivateRoute from './components/PrivateRoute';
 import { AuthContext } from './auth/auth';
 import './App.css';
-import Acceuil from './components/acceuil';
-import Filtre from './components/filtre';
-import Form from './components/form';
-import Fiche from './components/fiche';
-import Edit from './components/edit';
-import Login from './components/login';
-import Signup from './components/signup';
+import Login from './components/log/login';
+import Signup from './components/log/signup';
 import AuthService from './auth/auth';
-import Logout from './components/logout';
-import PdfFiche from './components/pdfFiche';
+import Logout from './components/log/logout';
+import store from './components/store';
+import { Provider  } from 'react-redux';
+import Home from './components/Home';
+import { request } from './components/redux/request';
 
 
 class App extends React.Component {
@@ -36,8 +34,18 @@ class App extends React.Component {
     }
   }
 
-  componentDidMount(){
+  UNSAFE_componentWillMount(){
     this.checkLog();
+    request.get('/scans').then().catch(error =>{
+      // alert(error.response);
+      if(error.response === "undefined"){
+        if(error.response.status === 401){
+          this.setState({ isLog: false});
+          AuthService.logOut();
+          this.checkLog();
+        }   
+      }
+    })
   }
   
   handleLogOff(log) {
@@ -55,27 +63,25 @@ class App extends React.Component {
     } 
     const authJoker = this.state.authTokens;
     const isLog = this.state.isLog;
-    console.log(isLog);
     
     return (
       <AuthContext.Provider value={{ authTokens: authJoker, setAuthTokens: setTokens}} >
-        <BrowserRouter>
-          <div>
-               <TopBar isLog={isLog} handleLog = {this.handleLogOff.bind(this)} />
-            <Switch>
-              <PrivateRoute path="/signup" component={Signup} exact />
-              <PrivateRoute path="/" component={Acceuil} exact isAuth={this.handleLogOn.bind(this)} />} />
-              <PrivateRoute path="/filtre" component={Filtre} exact isAuth={this.handleLogOn.bind(this)}/>
-              <PrivateRoute path="/nouvelle-fiche" component={Form} exact isAuth={this.handleLogOn.bind(this)}/>
-              <PrivateRoute path="/fiche/:id" component={Fiche} exact isAuth={this.handleLogOn.bind(this)} />
-              <PrivateRoute path="/edit/:id" component={Edit} exact isAuth={this.handleLogOn.bind(this)}/>
-              <Route path="/login" render={(props) => <Login {...props} isAuth={this.handleLogOn.bind(this)}/>} exact />
-              <Route path="/logout" component={Logout} exact />
-              <Route path="/print" component={PdfFiche} />
-              <Route component={Error} />
-            </Switch>
-          </div>
-        </BrowserRouter>
+        <Provider store={store}>
+          <BrowserRouter>
+            <div>
+                <TopBar isLog={isLog} handleLog = {this.handleLogOff.bind(this)} />
+              <Switch>
+                <PrivateRoute path="/" component={Home} handleLog = {this.handleLogOff.bind(this)}  exact />
+
+                <PrivateRoute path="/signup" component={Signup} exact />
+
+                <Route path="/login" render={(props) => <Login {...props} isAuth={this.handleLogOn.bind(this)}/>} exact />
+                <Route path="/logout" component={Logout} exact />
+                <Route component={Error} />
+              </Switch>
+            </div>
+          </BrowserRouter>
+        </Provider>
       </AuthContext.Provider>
     );
   }
